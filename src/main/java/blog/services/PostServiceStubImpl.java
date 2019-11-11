@@ -2,6 +2,8 @@ package blog.services;
 
 import blog.models.Post;
 import blog.models.User;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +11,9 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Service
 public class PostServiceStubImpl implements PostService {
+    static Logger logger = Logger.getLogger(PostServiceStubImpl.class);
     private List<Post> posts = new ArrayList<Post>() {{
         add(new Post(1L, "First Post", "<p>Line #1.</p><p>Line #2</p>", null));
         add(new Post(2L, "Second Post",
@@ -34,9 +38,41 @@ public class PostServiceStubImpl implements PostService {
     @Override
     public Post findById(Long id) {
         return this.posts.stream()
-                         .filter(p -> Objects.equals(p.getId(), id))
-                         .findFirst()
-                         .orElse(null);
-
+                .filter(p -> Objects.equals(p.getId(), id))
+                .findFirst()
+                .orElse(null);
+    }
+    @Override
+    public Post createPost(Post post) {
+        post.setId(this.posts.stream().mapToLong(p -> p.getId()).max().getAsLong() + 1);
+        this.posts.add(post);
+        return post;
+        }
+    @Override
+    public Post editPost (Post post) throws RuntimeException{
+        Long idToEdit = post.getId();
+        try {
+            for (int i = 0; i < this.posts.size(); i++) {
+                if (this.posts.get(i).getId() == idToEdit) {
+                    this.posts.set(i, post);
+                }
+            }
+        } catch (RuntimeException e) {
+            logger.debug("Can not find such blog with the same id" + post.getId());
+        }
+        return post;
+    }
+    @Override
+    public void deleteById (Long id) throws RuntimeException {
+        try {
+            for (int i = 0; i < this.posts.size(); i++) {
+                if (this.posts.get(i).getId() == id) {
+                    this.posts.remove(i);
+                    return;
+                }
+            }
+        } catch (RuntimeException e) {
+            logger.debug("Can not find such blog with the same id" + id);
+        }
     }
 }
