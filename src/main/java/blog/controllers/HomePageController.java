@@ -12,8 +12,10 @@ import java.util.stream.Collectors;
 
 @Controller
 public class HomePageController {
+
     @Autowired
     private PostService postService;
+
     @RequestMapping("/")
     public String index(Model model) {
         List<Post> latest5Posts = postService.findLatest5();
